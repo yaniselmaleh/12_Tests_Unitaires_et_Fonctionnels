@@ -1,0 +1,47 @@
+stages:
+  - install
+  - test
+  - build
+
+cache:
+  paths:
+    - node_modules/
+
+install_dependencies:
+  stage: install
+  image: node:16
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+
+run_tests:
+  stage: test
+  image: node:16
+  script:
+    - npm test -- --watchAll=false --coverage
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+  dependencies:
+    - install_dependencies
+
+build_app:
+  stage: build
+  image: node:16
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 week
+  dependencies:
+    - install_dependencies
+  only:
+    - main
+    - develop
